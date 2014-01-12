@@ -26,7 +26,6 @@ func Max(a ...int) int {
 type TrieNode struct {
 	letter rune //Equivalent to int32
 	children map[rune]*TrieNode
-	isFinal bool
 	text string
 }
 
@@ -57,7 +56,7 @@ func buildTrieNode(t *TrieNode, runeValue rune, final bool, text string) (*TrieN
 		}
 		return node
 	} else {
-		node := &TrieNode{letter: runeValue, isFinal: final, children: make(map[rune]*TrieNode) }
+		node := &TrieNode{letter: runeValue, children: make(map[rune]*TrieNode) }
 		t.children[runeValue] = node
 		return node
 	}
@@ -85,7 +84,7 @@ func (t *TrieNode) SearchSuffix(query string) ([]string) {
 
 func getAllSuffixes(n *TrieNode, candidates []string) ([]string){
 
-	if (n.isFinal) {
+	if len(n.text) > 0 {
 		candidates = append(candidates, n.text)
 	}
 
