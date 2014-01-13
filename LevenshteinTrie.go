@@ -77,25 +77,23 @@ func (t *TrieNode) SearchSuffix(query string) ([]string) {
 
 	candidates := make([]string, 0)
 
+	var getAllSuffixes func (n *TrieNode) ([]string)
+	getAllSuffixes = func (n *TrieNode) ([]string){
+		if len(n.text) > 0 {
+			candidates = append(candidates, n.text)
+		}
+
+		for _, childNode := range n.children {
+			getAllSuffixes(childNode)
+		}
+
+	}
 	candidates = getAllSuffixes(curr, candidates)
 
 	return candidates
 }
 
-func getAllSuffixes(n *TrieNode, candidates []string) ([]string){
-
-	if len(n.text) > 0 {
-		candidates = append(candidates, n.text)
-	}
-
-	for _, childNode := range n.children {
-		candidates = getAllSuffixes(childNode, candidates)
-	}
-
-	return candidates
-}
-
-func SearchLevenshten(n *TrieNode, text string, distance int) ([]string) {
+func SearchLevenshtein(n *TrieNode, text string, distance int) ([]string) {
 	candidates := make([]string, 0)
 
 	//initialize the first row
@@ -105,41 +103,45 @@ func SearchLevenshten(n *TrieNode, text string, distance int) ([]string) {
 		currentRow[i] = i
 	}
 
+	//searchRecursive(childNode, currentRow, letter, []rune(text), maxDistance)
+
+	var searchRecursive func (n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int) ([]string)
+
+	searchRecursive = func (n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int, candidates []string) ([]string) {
+		columns := len(text) + 1
+		currentRow := make([]int, columns)
+
+		currentRow[0] = prevRow[0] + 1
+
+		for col := 1; col <  columns; col++ {
+			insertCost := currentRow[col - 1] + 1
+			deleteCost := currentRow[col] + 1
+			var replaceCost int
+			if text[col - 1] != letter {
+				if text[col - 1] != letter {
+					replaceCost = prevRow[col - 1] + 1
+				} else {
+					replaceCost = prevRow[col - 1]
+				}
+			}
+			currentRow[col] = Min(insertCost, deleteCost, replaceCost)
+		}
+
+		if currentRow[len(currentRow) - 1] <= maxDistance && len(n.text) > 0 {
+			candidates = append(candidates, n.text)
+		}
+
+		if Min(currentRow...) <= maxDistance {
+			for letter, childNode := range n.children {
+				searchRecursive(childNode, currentRow, letter, []rune(text), maxDistance)
+			}
+		}
+
+		return candidates
+	}
+
 	for letter, childNode := range n.children {
-		candidates = searchRecursive(childNode, currentRow, letter, []rune(text), distance, candidates)
-	}
-
-	return candidates
-}
-
-func searchRecursive(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int, candidates []string) ([]string) {
-    columns := len(text) + 1
-    currentRow := make([]int, columns)
-
-	currentRow[0] = prevRow[0] + 1
-
-	for col := 1; col <  columns; col++ {
-		insertCost := currentRow[col - 1] + 1
-		deleteCost := currentRow[col] + 1
-		var replaceCost int
-		if text[col - 1] != letter {
-			  if text[col - 1] != letter {
-				  replaceCost = prevRow[col - 1] + 1
-			  } else {
-				  replaceCost = prevRow[col - 1]
-			  }
-		}
-		currentRow[col] = Min(insertCost, deleteCost, replaceCost)
-	}
-
-	if currentRow[len(currentRow) - 1] <= maxDistance && len(n.text) > 0 {
-		candidates = append(candidates, n.text)
-	}
-
-	if Min(currentRow...) <= maxDistance {
-		for letter, childNode := range n.children {
-			candidates = searchRecursive(childNode, currentRow, letter, []rune(text), maxDistance, candidates)
-		}
+		searchRecursive(childNode, currentRow, letter, []rune(text), distance)
 	}
 
 	return candidates
