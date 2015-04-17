@@ -1,6 +1,7 @@
 package LevenshteinTrie
 
 import (
+	"fmt"
 	"unicode/utf8"
 )
 
@@ -74,11 +75,12 @@ func (t *TrieNode) SearchSuffix(query string) []string {
 	var curr *TrieNode
 	var ok bool
 	//first, find the end of the prefix
-	for i, w := 0, 0; i < len(query); i += w {
-		runeValue, width := utf8.DecodeRuneInString(query[i:])
-		w = width
-		if curr, ok = curr.children[runeValue]; ok {
-			//do nothing
+	for _, letter := range query {
+		if curr != nil {
+			if curr, ok = curr.children[letter]; ok {
+				//do nothing
+			}
+
 		}
 	}
 
@@ -86,6 +88,9 @@ func (t *TrieNode) SearchSuffix(query string) []string {
 
 	var getAllSuffixes func(n *TrieNode)
 	getAllSuffixes = func(n *TrieNode) {
+		if n == nil {
+			return
+		}
 		if n.final == true {
 			candidates = append(candidates, n.text)
 		}
@@ -100,7 +105,15 @@ func (t *TrieNode) SearchSuffix(query string) []string {
 	return candidates
 }
 
-func (n *TrieNode) SearchLevenshtein(text string, distance int) []string {
+type QueryResult struct {
+	Val      string
+	Distance int
+}
+
+func (q QueryResult) String() string {
+	return fmt.Sprintf("Val: %s\n", q.Val)
+}
+func (n *TrieNode) SearchLevenshtein(text string, distance int) []QueryResult {
 
 	//initialize the first row for the dynamic programming alg
 	currentRow := make([]int, len(text)+1)
@@ -109,10 +122,9 @@ func (n *TrieNode) SearchLevenshtein(text string, distance int) []string {
 		currentRow[i] = i
 	}
 
-	candidates := make([]string, 0)
+	candidates := make([]QueryResult, 0)
 
 	var searchRecursive func(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int)
-
 	searchRecursive = func(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int) {
 		columns := len(text) + 1
 		currentRow := make([]int, columns)
@@ -133,8 +145,9 @@ func (n *TrieNode) SearchLevenshtein(text string, distance int) []string {
 			currentRow[col] = Min(insertCost, deleteCost, replaceCost)
 		}
 
-		if currentRow[len(currentRow)-1] <= maxDistance && len(n.text) > 0 {
-			candidates = append(candidates, n.text)
+		distance := currentRow[len(currentRow)-1]
+		if distance <= maxDistance && len(n.text) > 0 {
+			candidates = append(candidates, QueryResult{Val: n.text, Distance: distance})
 		}
 
 		if Min(currentRow...) <= maxDistance {
