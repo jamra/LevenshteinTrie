@@ -2,6 +2,7 @@ package LevenshteinTrie
 
 import (
 	"fmt"
+	"sort"
 	"unicode/utf8"
 )
 
@@ -113,10 +114,18 @@ type QueryResult struct {
 func (q QueryResult) String() string {
 	return fmt.Sprintf("Val: %s\n", q.Val)
 }
+
+type ByDistance []QueryResult
+
+func (a ByDistance) Len() int           { return len(a) }
+func (a ByDistance) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByDistance) Less(i, j int) bool { return a[i].Distance < a[j].Distance }
+
 func (n *TrieNode) SearchLevenshtein(text string, distance int) []QueryResult {
 
 	//initialize the first row for the dynamic programming alg
-	currentRow := make([]int, len(text)+1)
+	l := utf8.RuneCount([]byte(text))
+	currentRow := make([]int, l+1)
 
 	for i := 0; i < len(currentRow); i++ {
 		currentRow[i] = i
@@ -160,6 +169,6 @@ func (n *TrieNode) SearchLevenshtein(text string, distance int) []QueryResult {
 	for letter, childNode := range n.children {
 		searchRecursive(childNode, currentRow, letter, []rune(text), distance)
 	}
-
+	sort.Sort(ByDistance(candidates))
 	return candidates
 }
