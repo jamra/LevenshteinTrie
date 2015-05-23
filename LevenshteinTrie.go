@@ -33,9 +33,9 @@ type TrieNode struct {
 }
 
 func (t *TrieNode) String() string {
-	s := fmt.Sprintf("%s\n", t.letter)
+	s := fmt.Sprintf("%#U\n", t.letter)
 	for _, v := range t.children {
-		s += fmt.Sprintf("-%s\n", v)
+		s += fmt.Sprintf("-%#U\n", v)
 	}
 	return s
 }
@@ -120,7 +120,7 @@ type QueryResult struct {
 }
 
 func (q QueryResult) String() string {
-	return fmt.Sprintf("Val: %s\n", q.Val)
+	return fmt.Sprintf("Val: %s, Dist: %d\n", q.Val, q.Distance)
 }
 
 type ByDistance []QueryResult
