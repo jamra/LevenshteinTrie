@@ -75,7 +75,7 @@ func NewTrieNode(t *TrieNode, runeValue rune, final bool, text string) *TrieNode
 	return node
 }
 
-func (t *TrieNode) SearchSuffix(query string) []string {
+func (t *TrieNode) Suffix(query string) []string {
 	var curr *TrieNode
 	var ok bool
 
@@ -129,7 +129,7 @@ func (a ByDistance) Len() int           { return len(a) }
 func (a ByDistance) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByDistance) Less(i, j int) bool { return a[i].Distance < a[j].Distance }
 
-func (n *TrieNode) SearchLevenshtein(text string, distance int) []QueryResult {
+func (n *TrieNode) Levenshtein(text string, distance int) []QueryResult {
 
 	//initialize the first row for the dynamic programming alg
 	l := utf8.RuneCount([]byte(text))
