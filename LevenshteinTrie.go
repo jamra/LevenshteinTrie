@@ -32,12 +32,19 @@ type TrieNode struct {
 	text     string
 }
 
+func (t *TrieNode) String() string {
+	s := fmt.Sprintf("%s\n", t.letter)
+	for _, v := range t.children {
+		s += fmt.Sprintf("-%s\n", v)
+	}
+	return s
+}
+
 func NewTrie() *TrieNode {
 	return &TrieNode{children: make(map[rune]*TrieNode)}
 }
 
 func (root *TrieNode) InsertText(text string) {
-
 	if root == nil {
 		return
 	}
@@ -57,52 +64,53 @@ func (root *TrieNode) InsertText(text string) {
 
 func NewTrieNode(t *TrieNode, runeValue rune, final bool, text string) *TrieNode {
 	node, exists := t.children[runeValue]
-	if exists {
-		if final {
-			node.final = true
-			node.text = text
-		}
-		return node
-	} else {
+	if !exists {
 		node = &TrieNode{letter: runeValue, children: make(map[rune]*TrieNode)}
 		t.children[runeValue] = node
-		return node
 	}
-	return nil
+	if final {
+		node.final = true
+		node.text = text
+	}
+	return node
 }
 
 func (t *TrieNode) SearchSuffix(query string) []string {
-
 	var curr *TrieNode
 	var ok bool
+
+	curr = t
 	//first, find the end of the prefix
 	for _, letter := range query {
 		if curr != nil {
-			if curr, ok = curr.children[letter]; ok {
+			curr, ok = curr.children[letter]
+			if ok {
 				//do nothing
 			}
 
+		} else {
+			return nil
 		}
+	}
+
+	candidates := getsuffixr(curr)
+
+	return candidates
+}
+
+func getsuffixr(n *TrieNode) []string {
+	if n == nil {
+		return nil
 	}
 
 	candidates := make([]string, 0)
-
-	var getAllSuffixes func(n *TrieNode)
-	getAllSuffixes = func(n *TrieNode) {
-		if n == nil {
-			return
-		}
-		if n.final == true {
-			candidates = append(candidates, n.text)
-		}
-
-		for _, childNode := range n.children {
-			getAllSuffixes(childNode)
-		}
-
+	if n.final == true {
+		candidates = append(candidates, n.text)
 	}
-	getAllSuffixes(curr)
 
+	for _, childNode := range n.children {
+		candidates = append(candidates, getsuffixr(childNode)...)
+	}
 	return candidates
 }
 
@@ -133,42 +141,43 @@ func (n *TrieNode) SearchLevenshtein(text string, distance int) []QueryResult {
 
 	candidates := make([]QueryResult, 0)
 
-	var searchRecursive func(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int)
-	searchRecursive = func(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int) {
-		columns := len(text) + 1
-		currentRow := make([]int, columns)
-
-		currentRow[0] = prevRow[0] + 1
-
-		for col := 1; col < columns; col++ {
-			insertCost := currentRow[col-1] + 1
-			deleteCost := currentRow[col] + 1
-			var replaceCost int
-			if text[col-1] != letter {
-				if text[col-1] != letter {
-					replaceCost = prevRow[col-1] + 1
-				} else {
-					replaceCost = prevRow[col-1]
-				}
-			}
-			currentRow[col] = Min(insertCost, deleteCost, replaceCost)
-		}
-
-		distance := currentRow[len(currentRow)-1]
-		if distance <= maxDistance && len(n.text) > 0 {
-			candidates = append(candidates, QueryResult{Val: n.text, Distance: distance})
-		}
-
-		if Min(currentRow...) <= maxDistance {
-			for letter, childNode := range n.children {
-				searchRecursive(childNode, currentRow, letter, []rune(text), maxDistance)
-			}
-		}
-	}
-
 	for letter, childNode := range n.children {
-		searchRecursive(childNode, currentRow, letter, []rune(text), distance)
+		candidates = append(candidates, searchlevr(childNode, currentRow, letter, []rune(text), distance)...)
 	}
+
 	sort.Sort(ByDistance(candidates))
+	return candidates
+}
+
+func searchlevr(n *TrieNode, prevRow []int, letter rune, text []rune, maxDistance int) []QueryResult {
+	columns := len(prevRow)
+	currentRow := make([]int, columns)
+
+	currentRow[0] = prevRow[0] + 1
+
+	for col := 1; col < columns; col++ {
+		if text[col-1] == letter {
+			currentRow[col] = prevRow[col-1]
+			continue
+		}
+		insertCost := currentRow[col-1] + 1
+		deleteCost := prevRow[col] + 1
+		replaceCost := prevRow[col-1] + 1
+
+		currentRow[col] = Min(insertCost, deleteCost, replaceCost)
+	}
+
+	candidates := make([]QueryResult, 0)
+
+	distance := currentRow[len(currentRow)-1]
+	if distance <= maxDistance && n.final == true {
+		candidates = append(candidates, QueryResult{Val: n.text, Distance: distance})
+	}
+	mi := Min(currentRow[1:]...)
+	if mi <= maxDistance {
+		for l, childNode := range n.children {
+			candidates = append(candidates, searchlevr(childNode, currentRow, l, text, maxDistance)...)
+		}
+	}
 	return candidates
 }
