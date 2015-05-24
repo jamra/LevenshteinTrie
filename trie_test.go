@@ -48,10 +48,13 @@ func TestPrefixSearch(t *testing.T) {
 		"zygotes",
 		"zygourakis",
 	}
-	words := tree.Suffix("zygo")
+	query := "zygo"
+	words := tree.Suffix(query)
 	for _, e := range expected {
 		if !contains(words, e) {
 			t.Errorf("Missing word: %s", e)
+		} else {
+			t.Logf("Found: %s\n", e)
 		}
 	}
 }
@@ -79,6 +82,8 @@ func TestLevenshteinSearch(t *testing.T) {
 		results := tree.Levenshtein(e.query, e.distance)
 		if !containsq(results, e.query) {
 			t.Errorf("Missing term: %s", e.query)
+		} else {
+			t.Logf("Looking for: %s, Found: %s\n", e.query, results)
 		}
 	}
 }
