@@ -2,7 +2,6 @@ package LevenshteinTrie
 
 import (
 	"bufio"
-	"errors"
 	"io"
 	"os"
 	"testing"
@@ -11,16 +10,9 @@ import (
 var tree *TrieNode
 
 func getfile() (io.ReadCloser, error) {
-	//	filename := "./w1_fixed.txt"
-	filename := "/usr/share/dict/words"
-	if _, err := os.Stat(filename); !os.IsNotExist(err) {
-		file, err := os.Open(filename)
-		return file, err
-	} else {
-		file, err := os.Open("/var/lib/dict/words")
-		return file, err
-	}
-	return nil, errors.New("Dictionary file does not exist")
+	filename := "./w1_fixed.txt"
+	file, err := os.Open(filename)
+	return file, err
 }
 
 func TestInsert(t *testing.T) {
@@ -44,21 +36,19 @@ func TestInsert(t *testing.T) {
 
 func TestPrefixSearch(t *testing.T) {
 	expected := []string{
-		"zygosaccharomyces",
-		"zygose",
-		"zygosis",
-		"zygosperm",
-		"zygosphenal",
-		"zygosphene",
-		"zygosphere",
-		"zygosporange",
-		"zygosporangium",
-		"zygospore",
-		"zygosporic",
-		"zygosporophore",
-		"zygostyle",
+		"zygodactyl",
+		"zygoma",
+		"zygomatic",
+		"zygomaticus",
+		"zygomycetes",
+		"zygon",
+		"zygosity",
+		"zygote",
+		"zygote-specific",
+		"zygotes",
+		"zygourakis",
 	}
-	words := tree.Suffix("zygos")
+	words := tree.Suffix("zygo")
 	for _, e := range expected {
 		if !contains(words, e) {
 			t.Errorf("Missing word: %s", e)
@@ -80,9 +70,9 @@ func TestLevenshteinSearch(t *testing.T) {
 		result   []QueryResult
 		distance int
 	}{
-		{"accidia", []QueryResult{
-			{"accidia", 0},
-			{"accidie", 1},
+		{"accidens", []QueryResult{
+			{"accidens", 0},
+			{"accident", 1},
 		}, 1},
 	}
 	for _, e := range expected {
