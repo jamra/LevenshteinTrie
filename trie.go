@@ -3,6 +3,7 @@ package LevenshteinTrie
 import (
 	"fmt"
 	"sort"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -48,7 +49,7 @@ func (root *TrieNode) InsertText(text string) {
 	if root == nil {
 		return
 	}
-
+	text = strings.ToLower(text)
 	currNode := root //Starts at root
 	for i, w := 0, 0; i < len(text); i += w {
 		runeValue, width := utf8.DecodeRuneInString(text[i:])
