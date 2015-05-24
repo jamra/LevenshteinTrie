@@ -6,7 +6,7 @@ A Trie data structure that allows for fuzzy string matching
 This is the Go version of a python program written by Steve Hanov in his [blog post](http://stevehanov.ca/blog/index.php?id=114)
 
 This is finished, but not tested.
-
+[![Build Status](https://drone.io/github.com/jamra/LevenshteinTrie/status.png)](https://drone.io/github.com/jamra/LevenshteinTrie/latest)
 ###How it works
 
  - It is a basic [Trie](http://en.wikipedia.org/wiki/Trie).
