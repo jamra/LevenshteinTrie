@@ -12,7 +12,7 @@ var tree *TrieNode
 
 func getfile() (io.ReadCloser, error) {
 	filename := "./w1_fixed.txt"
-	if _, err := os.Stat(filename); os.IsNotExist(err) {
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
 		file, err := os.Open(filename)
 		return file, err
 	} else {
