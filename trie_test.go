@@ -60,16 +60,17 @@ func contains(words []string, word string) bool {
 }
 func TestLevenshteinSearch(t *testing.T) {
 	expected := []struct {
-		query  string
-		result []QueryResult
+		query    string
+		result   []QueryResult
+		distance int
 	}{
 		{"accidia", []QueryResult{
 			{"accidia", 0},
 			{"accidie", 1},
-		}},
+		}, 1},
 	}
 	for _, e := range expected {
-		results := tree.Levenshtein(e.query, 1)
+		results := tree.Levenshtein(e.query, e.distance)
 		if !containsq(results, e.query) {
 			t.Errorf("Missing term: %s", e.query)
 		}
