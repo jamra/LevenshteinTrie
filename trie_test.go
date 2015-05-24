@@ -11,12 +11,13 @@ import (
 var tree *TrieNode
 
 func getfile() (io.ReadCloser, error) {
-	filename := "./w1_fixed.txt"
+	//	filename := "./w1_fixed.txt"
+	filename := "/usr/share/dict/words"
 	if _, err := os.Stat(filename); !os.IsNotExist(err) {
 		file, err := os.Open(filename)
 		return file, err
 	} else {
-		file, err := os.Open("/usr/share/dict/words")
+		file, err := os.Open("/var/lib/dict/words")
 		return file, err
 	}
 	return nil, errors.New("Dictionary file does not exist")
